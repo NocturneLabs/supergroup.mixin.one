@@ -8,7 +8,7 @@ COPY ./package-lock.json /usr/src/app
 RUN npm install
 
 COPY . /usr/src/app/
-COPY ./env.prod.sh /usr/src/app/env.prod.sh
+COPY .env.production.local /usr/src/app/.env
 RUN npm run build
 
 RUN chmod -R 777 /usr/src/app/dist/
