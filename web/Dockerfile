@@ -13,10 +13,7 @@ RUN npm run build
 
 RUN chmod -R 777 /usr/src/app/dist/
 
-VOLUME /usr/src/app/dist
+FROM abiosoft/caddy:no-stats
 
-FROM nginx:1.16.0
-
-COPY --from=0 /usr/src/app/dist/ /var/www/mixin_group/dist
-COPY ./web.conf  /etc/nginx/conf.d/
-COPY ./api.conf  /etc/nginx/conf.d/
+COPY --from=0 /usr/src/app/dist/ /srv
+COPY Caddyfile /etc/

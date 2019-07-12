@@ -1,0 +1,17 @@
+http://0.0.0.0 {
+  root /srv
+}
+
+http://groupmixin.nocturnelabs.dev {
+  gzip
+  root /srv
+  rewrite {
+    to {path} {path}/ /
+  }
+}
+
+http://apimixin.nocturnelabs.dev {
+  proxy / http://localhost:7001 {
+    transparent
+  }
+}
