@@ -21,8 +21,9 @@ import (
 )
 
 const (
-	PaymentStatePending = "pending"
-	PaymentStatePaid    = "paid"
+	PaymentStatePending    = "pending"
+	PaymentStatePaid       = "paid"
+	PaymentStateUnverified = "unverified"
 
 	PayMethodMixin  = "mixin"
 	PayMethodWechat = "wechat"
@@ -117,7 +118,7 @@ func createUser(ctx context.Context, accessToken, userId, identityNumber, fullNa
 			UserId:         userId,
 			IdentityNumber: identity,
 			TraceId:        bot.UuidNewV4().String(),
-			State:          PaymentStatePending,
+			State:          PaymentStateUnverified,
 			ActiveAt:       time.Now(),
 			isNew:          true,
 		}
@@ -131,6 +132,8 @@ func createUser(ctx context.Context, accessToken, userId, identityNumber, fullNa
 			user.State = PaymentStatePaid
 			user.SubscribedAt = time.Now()
 			user.PayMethod = PayMethodOffer
+		} else if !config.AppConfig.System.InviteToJoin {
+			user.State = PaymentStatePending
 		}
 		if config.AppConfig.Service.Environment != "test" {
 			err = createConversation(ctx, "CONTACT", userId)
@@ -276,7 +279,7 @@ func (user *User) Payment(ctx context.Context) error {
 }
 
 func (user *User) paymentInTx(ctx context.Context, tx *sql.Tx, method string) error {
-	if user.State != PaymentStatePending {
+	if user.State == PaymentStatePaid {
 		if method == PayMethodCoupon {
 			return session.ForbiddenError(ctx)
 		}
@@ -474,6 +477,25 @@ func findUsersByIdentityNumber(ctx context.Context, identity int64) ([]*User, er
 func findUsersByKeywords(ctx context.Context, keywords string) ([]*User, error) {
 	query := fmt.Sprintf("SELECT %s FROM users WHERE LOWER(full_name) LIKE LOWER($1)", strings.Join(usersCols, ","))
 	rows, err := session.Database(ctx).QueryContext(ctx, query, fmt.Sprintf("%%%s%%", keywords))
+	if err != nil {
+		return nil, session.TransactionError(ctx, err)
+	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		p, err := userFromRow(rows)
+		if err != nil {
+			return nil, session.TransactionError(ctx, err)
+		}
+		users = append(users, p)
+	}
+	return users, nil
+}
+
+func findUsersByIds(ctx context.Context, ids []string) ([]*User, error) {
+	query := fmt.Sprintf("SELECT %s FROM users WHERE user_id in ($1)", strings.Join(usersCols, ","))
+	rows, err := session.Database(ctx).QueryContext(ctx, query, strings.Join(ids, ","))
 	if err != nil {
 		return nil, session.TransactionError(ctx, err)
 	}
