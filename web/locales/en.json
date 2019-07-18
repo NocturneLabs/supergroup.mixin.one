@@ -118,5 +118,8 @@
     "copy": "Copy",
     "state_available": "Available",
     "state_used": "Used by {name}"
+  },
+  "invitation": {
+    "details": "Invitation Details"
   }
 }

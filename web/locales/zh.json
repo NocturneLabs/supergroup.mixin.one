@@ -118,5 +118,8 @@
     "copy": "复制",
     "state_available": "未使用",
     "state_used": "被 {name} 用了"
+  },
+  "invitation": {
+    "details": "详情"
   }
 }

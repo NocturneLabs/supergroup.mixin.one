@@ -14,7 +14,7 @@
         finished-text="~ END ~"
         @load="onLoad"
       >
-        <member-item :member="item" v-for="item in items" @member-click="memberClick"></member-item>
+        <member-item :member="item" v-for="item in items" v-bind:key="item.id" @member-click="memberClick"></member-item>
       </van-list>
       <van-action-sheet
         :title="currentMember ? currentMember.full_name : ''"

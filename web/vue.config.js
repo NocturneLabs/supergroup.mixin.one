@@ -1,6 +1,7 @@
 module.exports = {
   devServer: {
     disableHostCheck: true,
+    clientLogLevel: 'info'
   },
   configureWebpack: {
     resolve: {

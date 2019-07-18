@@ -38,12 +38,13 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
 }
-a { }
+
 #app {
   background: #f8f8f8;
   padding: 0;
   height: 100%;
 }
+
 .van-cell.van-field {
   padding: 0;
 }
