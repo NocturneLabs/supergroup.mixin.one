@@ -33,12 +33,16 @@ export default {
   },
 
   async mounted() {
-    this.meInfo = await this.GLOBAL.api.account.me()
+    // this.meInfo = await this.GLOBAL.api.account.me()
   },
 
   methods: {
     apply() {
-      this.GLOBAL.api.invitation.apply(this.code)
+      this.GLOBAL.api.invitation.apply(this.code).then((response) => {
+        console.log(response)
+      }).catch((error) => {
+        console.log(error)
+      })
     }
   },
 };

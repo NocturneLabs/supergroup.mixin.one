@@ -6,8 +6,8 @@
         class="subtitle"
       >成功邀请好友：{{this.usedInvitations.length}} 待付费好友：{{this.pendingInvitations.length}}</p>
     </div>
-    <van-tabs v-model="activeName">
-      <van-tab title="邀请码">
+    <van-tabs  v-model="activeName">
+      <van-tab title="邀请码" name="codes">
         <van-list v-model="loading" :finished="finished">
           <InvitationCodeListItem class="layout" v-for="item in list" :key="item.code" :invitation="item" />
         </van-list>
@@ -26,7 +26,7 @@
           >申请</van-button>
         </div>
       </van-tab>
-      <van-tab title="受邀者">
+      <van-tab title="受邀者" name="invitees">
         <van-list v-model="loading" :finished="finished">
           <InvitationInviteeListItem class="layout" v-for="item in list" :key="item.code" :invitation="item" />
         </van-list>
@@ -43,6 +43,7 @@ export default {
 
   data() {
     return {
+      activeName: "codes",
       list: [
     {
       "type": "Invitation",
@@ -74,19 +75,23 @@ export default {
 ,
       loading: false,
       finished: true,
-      invitationsHistory: null,
-      invitationCurrent: null,
+      invitationsHistory: [],
+      invitationsCurrent: [],
     };
   },
 
-  async mounted() {
-    this.invitationsHistory = await this.Global.api.invitation.index
-    this.invitationsCurrent = await this.Global.api.invitation.index
+  mounted() {
+    this.GLOBAL.api.invitation.index(false).then((response) => {
+      this.invitationsCurrent = response.data
+    })
+    this.GLOBAL.api.invitation.index(true).then((response) => {
+      this.invitationsHistory = response.data
+    })
   },
 
   computed: {
     usedInvitations() {
-      return [];
+      return this.invitationsHistory
     },
     pendingInvitations() {
       return [];
@@ -105,8 +110,8 @@ export default {
   },
 
   methods: {
-    async apply() {
-      await this.Global.api.invitation.create()
+    apply() {
+      this.GLOBAL.api.invitation.create()
     }
   }
 };
