@@ -15,7 +15,7 @@
           <p class="subtitle">
             * 未付费：被邀请用户已使用邀请码但未成功付费
             <br />* 已使用：被邀请用户已成功使用邀请码并付费
-            <br />* 当以上三个邀请码状态均为‘已使用’状态时才可申请新的一组邀请码
+            <br />* 当以上展示的邀请码均被使用并付费后即可申请新邀请码
           </p>
           <van-button
             @disabled="applyDisabled"
@@ -94,10 +94,14 @@ export default {
       return this.invitationsHistory
     },
     pendingInvitations() {
-      return [];
+      return this.invitationsCurrent.filter((item) => {
+        return item.is_used == true && !item.invitee
+      })
     },
     unusedInvitations() {
-      return [];
+      return this.invitationsCurrent.filter((item) => {
+        return item.is_used == false
+      })
     },
     applyDisabled() {
       return false;
