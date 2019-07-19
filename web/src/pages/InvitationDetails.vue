@@ -1,34 +1,45 @@
 <template>
   <div>
     <div class="layout header">
-      <h2>我的邀请</h2>
-      <p
-        class="subtitle"
-      >成功邀请好友：{{this.usedInvitations.length}} 待付费好友：{{this.pendingInvitations.length}}</p>
+      <h2>{{this.$t("invitation.mine")}}</h2>
+      <p class="subtitle">
+        <span>{{this.$t("invitation.used_friends")}}{{this.usedInvitations.length}}</span>
+        <span class="pending">{{this.$t("invitation.pending_friends")}}{{this.pendingInvitations.length}}</span>
+      </p>
     </div>
-    <van-tabs  v-model="activeName">
-      <van-tab title="邀请码" name="codes">
+    <van-tabs v-model="activeName">
+      <van-tab :title="titleCodes" name="codes">
         <van-list v-model="loading" :finished="finished">
-          <InvitationCodeListItem class="layout" v-for="item in list" :key="item.code" :invitation="item" />
+          <InvitationCodeListItem
+            class="layout"
+            v-for="item in availableInvitations"
+            :key="item.code"
+            :invitation="item"
+          />
         </van-list>
         <div class="layout">
           <p class="subtitle">
-            * 未付费：被邀请用户已使用邀请码但未成功付费
-            <br />* 已使用：被邀请用户已成功使用邀请码并付费
-            <br />* 当以上展示的邀请码均被使用并付费后即可申请新邀请码
+            {{this.$t("invitation.rule1")}}
+            <br />
+            {{this.$t("invitation.rule2")}}
           </p>
           <van-button
-            @disabled="applyDisabled"
+            :disabled="applyDisabled"
             class="button"
             type="info"
             size="small"
             @click="apply"
-          >申请</van-button>
+          >{{this.$t("invitation.apply")}}</van-button>
         </div>
       </van-tab>
-      <van-tab title="受邀者" name="invitees">
+      <van-tab :title="titleInvitees" name="invitees">
         <van-list v-model="loading" :finished="finished">
-          <InvitationInviteeListItem class="layout" v-for="item in list" :key="item.code" :invitation="item" />
+          <InvitationInviteeListItem
+            class="layout"
+            v-for="item in usedInvitations"
+            :key="item.code"
+            :invitation="item"
+          />
         </van-list>
       </van-tab>
     </van-tabs>
@@ -36,86 +47,68 @@
 </template>
 
 <script>
-import InvitationCodeListItem from '../components/Invitation/InvitationCodeListItem'
-import InvitationInviteeListItem from '../components/Invitation/InvitationInviteeListItem'
+import InvitationCodeListItem from "../components/Invitation/InvitationCodeListItem";
+import InvitationInviteeListItem from "../components/Invitation/InvitationInviteeListItem";
 export default {
   name: "InvitationDetails",
 
   data() {
     return {
+      titleCodes: this.$t("invitation.code"),
+      titleInvitees: this.$t("invitation.invitees"),
       activeName: "codes",
-      list: [
-    {
-      "type": "Invitation",
-      "code": "bknia7a3q5626nglhs6g",
-      "invitee": {
-        "user_id": "9643f9b0-1c26-44cd-9785-a54c0585185c",
-        "full_name": "Reason",
-        "avatar_url": "https://images.mixin.one/vGj4xQirkdUg6C6zw6b49MmZPdSvxJc5N5geS1xaV-c7W5BblFq2qUq3aDAHCJqdDP_umRsMBoRiaIoBEesL0zM=s256",
-        "state": "pending"
-      },
-      "is_used": true,
-      "created_at": "2019-07-17T21:39:41.065295+08:00"
-    },
-    {
-      "type": "Invitation",
-      "code": "bknia7a3q5626nglhs60",
-      "invitee": null,
-      "is_used": false,
-      "created_at": "2019-07-17T21:39:41.065279+08:00"
-    },
-    {
-      "type": "Invitation",
-      "code": "bknia7a3q5626nglhs5g",
-      "invitee": null,
-      "is_used": false,
-      "created_at": "2019-07-17T21:39:41.065201+08:00"
-    }
-  ]
-,
       loading: false,
       finished: true,
       invitationsHistory: [],
-      invitationsCurrent: [],
+      invitationsCurrent: []
     };
   },
 
   mounted() {
-    this.GLOBAL.api.invitation.index(false).then((response) => {
-      this.invitationsCurrent = response.data
-    })
-    this.GLOBAL.api.invitation.index(true).then((response) => {
-      this.invitationsHistory = response.data
-    })
+    this.GLOBAL.api.invitation.index(false).then(response => {
+      this.invitationsCurrent = response.data;
+    });
+    this.GLOBAL.api.invitation.index(true).then(response => {
+      this.invitationsHistory = response.data;
+    });
   },
 
   computed: {
     usedInvitations() {
-      return this.invitationsHistory
+      return this.invitationsHistory;
     },
     pendingInvitations() {
-      return this.invitationsCurrent.filter((item) => {
-        return item.is_used == true && !item.invitee
-      })
+      return this.invitationsCurrent.filter(item => {
+        return (
+          item.is_used == true &&
+          item.invitee &&
+          item.invitee.state == "pending"
+        );
+      });
     },
     unusedInvitations() {
-      return this.invitationsCurrent.filter((item) => {
-        return item.is_used == false
-      })
+      return this.invitationsCurrent.filter(item => {
+        return item.is_used == false;
+      });
+    },
+    availableInvitations() {
+      return this.unusedInvitations.concat(this.pendingInvitations) || [];
     },
     applyDisabled() {
-      return false;
+      return this.availableInvitations.length > 0;
     }
   },
 
   components: {
     InvitationCodeListItem,
-    InvitationInviteeListItem,
+    InvitationInviteeListItem
   },
 
   methods: {
     apply() {
-      this.GLOBAL.api.invitation.create()
+      this.GLOBAL.api.invitation.create().then(response => {
+        this.invitationsCurrent = response.data;
+      });
     }
   }
 };
@@ -140,6 +133,10 @@ export default {
   font-size: 14px;
   text-align: left;
   color: rgba(0, 0, 0, 0.25);
+}
+
+.pending {
+  padding-left: 1rem;
 }
 </style>
 

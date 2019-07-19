@@ -1,6 +1,12 @@
 <template>
   <div class="card">
-    <van-cell :title="invitation.code" :value="status" :label="label" value-class="{unused: true}" @click="copy" />
+    <van-cell
+      :title="invitation.code"
+      :value="value"
+      :label="label"
+      :value-class="valueClass"
+      @click="copy"
+    />
   </div>
 </template>
 
@@ -10,32 +16,55 @@ export default {
   props: ["invitation"],
   computed: {
     status() {
-      if (this.invitation.is_used) {
-        if (this.invitation.invitee) {
-          return "已使用"
-        } else {
-          return "待付费"
+      if (this.invitation.is_used && this.invitation.invitee) {
+        if (this.invitation.invitee.state == "pending") {
+          return "pending";
+        } else if (this.invitation.invitee.state == "paid") {
+          return "used";
         }
       } else {
-        return "未使用"
+        return "unused";
       }
     },
-
+    value() {
+      switch (this.status) {
+        case "pending":
+          return this.$t("invitation.status_pending");
+        case "used":
+          return this.$t("invitation.status_used");
+        case "unused":
+          return this.$t("invitation.status_unused");
+      }
+    },
+    valueClass() {
+      switch (this.status) {
+        case "pending":
+          return "pending";
+        case "unused":
+          return "unused";
+        case "unused":
+          return "";
+      }
+    },
     label() {
-      if (this.invitation.invitee) {
-        return this.invitation.invitee.full_name + "已用"
-      } else {
-        return "点击复制"
+      switch (this.status) {
+        case "pending":
+          return this.invitation.invitee.full_name + this.$t("invitation.used");
+        case "used":
+          return this.invitation.invitee.full_name + this.$t("invitation.used");
+        case "unused":
+          return this.$t("invitation.click_copy");
       }
     }
   },
   methods: {
     copy() {
-      this.$copyText(this.invitation.code).then(function (e) {
-        alert('Copied')
-      })
+      if (this.status == "unused") {
+        this.$copyText(this.invitation.code);
+        this.$toast(this.$t("invitation.copied"));
+      }
     }
-  },
+  }
 };
 </script>
 
@@ -51,6 +80,10 @@ export default {
 }
 
 .unused {
-  color: #52C41A;
+  color: #52c41a;
+}
+
+.pending {
+  color: #f5222d;
 }
 </style>

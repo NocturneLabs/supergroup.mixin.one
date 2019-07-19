@@ -1,12 +1,9 @@
 <template>
   <div>
-    <h2>
-      Hi, {{this.fullName}}
-      <br />欢迎加入笑来课堂
-    </h2>
+    <h2>{{this.$t("invitation.welcome")}}</h2>
     <div class="action">
-      <van-field v-model="code" placeholder="邀请码" autosize />
-      <van-button class="button" type="info" size="small" @click="apply">入群验证</van-button>
+      <van-field v-model="code" :placeholder="placeholder" autosize />
+      <van-button class="button" type="info" size="small" @click="apply">{{this.$t("invitation.verify")}}</van-button>
     </div>
   </div>
 </template>
@@ -17,34 +14,39 @@ export default {
 
   data() {
     return {
+      placeholder: this.$t("invitation.code"),
       meInfo: null,
-      code: '',
+      code: ""
     };
   },
 
   computed: {
     fullName() {
       if (this.meInfo) {
-        return this.meInfo.data.full_name
+        return this.meInfo.data.full_name;
       } else {
-        return ""
+        return "";
       }
     }
   },
 
-  async mounted() {
-    // this.meInfo = await this.GLOBAL.api.account.me()
-  },
-
   methods: {
     apply() {
-      this.GLOBAL.api.invitation.apply(this.code).then((response) => {
-        console.log(response)
-      }).catch((error) => {
-        console.log(error)
-      })
+      this.GLOBAL.api.invitation
+        .apply(this.code)
+        .then(response => {
+          if (response && response.data) {
+            this.$toast(this.$t("invitation.code_available"));
+            this.$router.push("/pay");
+          } else {
+            this.$toast(this.$t("invitation.code_unavailable"));
+          }
+        })
+        .catch(error => {
+          this.$toast(this.$t("invitation.code_unavailable"));
+        });
     }
-  },
+  }
 };
 </script>
 

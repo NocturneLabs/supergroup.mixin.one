@@ -4,11 +4,11 @@
       <img class="avatar" :src="invitation.invitee.avatar_url" />
       <div class="info">
         <div class="name">{{invitation.invitee.full_name}}</div>
-        <div class="mixinId">234235</div>
+        <div class="mixinId">{{invitation.invitee.identity_number}}</div>
       </div>
     </div>
-    <div class="code">邀请码： {{invitation.code}}</div>
-    <div class="time">加入时间：2019/04/23 12:00</div>
+    <div class="code">{{this.$t("invitation.code")}}： {{invitation.code}}</div>
+    <div class="time">{{this.$t("invitation.used_at")}}：{{invitation.used_at}}</div>
   </div>
 </template>
 
@@ -16,11 +16,6 @@
 export default {
   name: "InvitationInviteeListItem",
   props: ["invitation"],
-  data() {
-    return {
-      image_src: "https://img.yzcdn.cn/vant/cat.jpeg"
-    }
-  },
 };
 </script>
 
