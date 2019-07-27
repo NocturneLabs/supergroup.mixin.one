@@ -11,7 +11,7 @@ import (
 	"github.com/MixinNetwork/supergroup.mixin.one/durable"
 	"github.com/MixinNetwork/supergroup.mixin.one/session"
 	"github.com/lib/pq"
-	"github.com/rs/xid"
+	"github.com/lithammer/shortuuid"
 )
 
 const invitation_DDL = `
@@ -230,7 +230,6 @@ func findInvitationByCode(ctx context.Context, tx *sql.Tx, code string) (*Invita
 }
 
 func uniqueInvitationCode() string {
-	guid := xid.New()
-	return guid.String()
+	return shortuuid.New()
 }
 
